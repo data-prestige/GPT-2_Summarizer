@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from tqdm import tnrange, tqdm
 
 from dataset import GPT21024Dataset
-from utils import add_special_tokens, generate_sample, set_seed
+from utils_new import add_special_tokens, generate_sample, set_seed
 
 # WarmupLinearSchedule was not active so I copy pasted the class from an old repository, if it doesn't work we can go with this one below
 from transformers import AdamW, get_linear_schedule_with_warmup
@@ -139,6 +139,7 @@ def evaluate(args, model, eval_dataset, ignore_index, global_step=None):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--model_name", default='LorenzoDeMattei/GePpeTto', type=str, help="Model name to use")
     parser.add_argument("--lr", default=5e-5, type=float, required=True, help="learning rate")
     parser.add_argument("--seed", default=42, type=int, required=False, help="seed to replicate results")
     parser.add_argument("--n_gpu", default=1, type=int, required=False, help="no of gpu available")
@@ -165,9 +166,9 @@ def main():
                                  length=100)  # training on only 2500 datasets
     valid_data = GPT21024Dataset(args.root_dir, args.ids_file, mode='valid',
                                  length=20)  # validation on only 469 datasets
-    tokenizer = add_special_tokens()
+    tokenizer = add_special_tokens(args.model_name)
     ignore_idx = tokenizer.pad_token_id
-    model = GPT2LMHeadModel.from_pretrained('LorenzoDeMattei/GePpeTto')
+    model = GPT2LMHeadModel.from_pretrained(args.model_name)
     model.resize_token_embeddings(len(tokenizer))
     model.to(args.device)
 
