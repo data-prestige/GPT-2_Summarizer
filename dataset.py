@@ -4,14 +4,12 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from utils import add_special_tokens
-
 
 class GPT21024Dataset(Dataset):
 
-    def __init__(self, root_dir, ids_file, mode='train',length=None):
+    def __init__(self, tokenizer, root_dir, ids_file, mode='train',length=None):
         self.root_dir = root_dir
-        self.tokenizer = add_special_tokens()
+        self.tokenizer = tokenizer
 
         # with open(ids_file,'r') as f:
             # if mode=='train':

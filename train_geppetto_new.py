@@ -162,15 +162,16 @@ def main():
                         help="location of train, valid and test file indexes")
     args = parser.parse_args()
 
-    train_data = GPT21024Dataset(args.root_dir, args.ids_file, mode='train',
-                                 length=100)  # training on only 2500 datasets
-    valid_data = GPT21024Dataset(args.root_dir, args.ids_file, mode='valid',
-                                 length=20)  # validation on only 469 datasets
     tokenizer = add_special_tokens(args.model_name)
     ignore_idx = tokenizer.pad_token_id
     model = GPT2LMHeadModel.from_pretrained(args.model_name)
     model.resize_token_embeddings(len(tokenizer))
     model.to(args.device)
+
+    train_data = GPT21024Dataset(tokenizer, args.root_dir, args.ids_file, mode='train',
+                                 length=1000)  # training on only 2500 datasets
+    valid_data = GPT21024Dataset(tokenizer, args.root_dir, args.ids_file, mode='valid',
+                                 length=200)  # validation on only 469 datasets
 
     start = time.time()
     train(args, model, tokenizer, train_data, valid_data, ignore_idx)
