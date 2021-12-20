@@ -18,6 +18,18 @@ from utils_new import add_special_tokens, generate_sample, set_seed
 # WarmupLinearSchedule was not active so I copy pasted the class from an old repository, if it doesn't work we can go with this one below
 from transformers import AdamW, get_linear_schedule_with_warmup
 
+def model_save(model, model_dir, fp_16, num_epochs):
+    model_file = os.path.join(model_dir,
+                              'model_{}_trained_after_{}_epochs_only_sum_loss_ignr_pad.bin'.format(
+                                  fp_16, num_epochs))
+    config_file = os.path.join(model_dir,
+                               'config_{}_trained_after_{}_epochs_only_sum_loss_ignr_pad.json'.format(
+                                   fp_16, num_epochs))
+    torch.save(model.state_dict(), model_file)
+    model.config.to_json_file(config_file)
+    print('Saved model --> number of epochs ({})'.format(num_epochs))
+
+
 def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
     """ Trains GPT2 model and logs necessary details.
         Args:
@@ -44,6 +56,9 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
     train_iterator = tnrange(int(args.num_train_epochs), desc="Epoch")
     set_seed(args)
     i = 1
+
+    best_loss = None
+
     for _ in train_iterator:
         epoch_iterator = tqdm(train_dl, desc="Training")
         for step, batch in enumerate(epoch_iterator):
@@ -64,7 +79,7 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
             tr_loss += loss.item()
             print('epoch number {} done!'.format(i))
             i += 1
-            if (step + 1) % args.gradient_accumulation_steps == 0:
+            if step % 10 == 0:
                 optimizer.step()
                 scheduler.step()  # Update learning rate schedule
                 model.zero_grad()
@@ -76,7 +91,10 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
                 if (step + 1) / args.gradient_accumulation_steps == 1.0:
                     print('After 1st update: ', end='\n\n')
                     generate_sample(valid_dataset, tokenizer, model = model, num=2, eval_step=False, device=args.device)
-
+                if best_loss == None or loss.item() < best_loss:
+                    best_loss = loss.item()
+                    model_save(model, args['model_dir'], args['fp16_opt_level'], step)
+                    
             if (step + 1) % (10 * args.gradient_accumulation_steps) == 0:
                 results = evaluate(args, model, valid_dataset, ignore_index, global_step)
                 for key, value in results.items():
@@ -177,15 +195,10 @@ def main():
     train(args, model, tokenizer, train_data, valid_data, ignore_idx)
     print('total time: ', (time.time() - start) / 60, " minutes", end='\n\n')
 
-    print('Saving trained model...')
-    model_file = os.path.join(args['model_dir'],
-                              'model_{}_data{}_trained_after_{}_epochs_only_sum_loss_ignr_pad.bin'.format(
-                                  args['fp16_opt_level'], 100, args['num_train_epochs']))
-    config_file = os.path.join(args['model_dir'],
-                               'config_{}_data{}_trained_after_{}_epochs_only_sum_loss_ignr_pad.json'.format(
-                                   args['fp16_opt_level'], 100, args['num_train_epochs']))
-    torch.save(model.state_dict(), model_file)
-    model.config.to_json_file(config_file)
+    print('Saving last trained model...')
+
+    model_save(model, args['model_dir'], args['fp16_opt_level'], args['num_train_epochs'])
+    
 
 if __name__ == '__main__':
     main()
