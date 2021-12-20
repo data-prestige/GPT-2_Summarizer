@@ -91,7 +91,8 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
 
                 if best_loss == None or loss.item() < best_loss:
                     best_loss = loss.item()
-                    model_save(model, args.model_dir, args.fp16_opt_level, step)                    
+                    model_save(model, args.model_dir, args.fp16_opt_level, step)
+                    generate_sample(valid_dataset, tokenizer, model = model, num=2, eval_step=False, device=args.device)                    
                     
             if (step + 1) % int(total_steps) == 0:       # compute evaluation at the end of training
                 results = evaluate(args, model, valid_dataset, ignore_index, global_step)
