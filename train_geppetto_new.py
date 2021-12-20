@@ -55,7 +55,7 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
     model.zero_grad()
     train_iterator = tnrange(int(args.num_train_epochs), desc="Epoch")
     set_seed(args)
-    i = 1
+    i = 0
 
     best_loss = None
 
@@ -92,11 +92,16 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
                 if best_loss == None or loss.item() < best_loss:
                     best_loss = loss.item()
                     model_save(model, args.model_dir, args.fp16_opt_level, step)                    
-                    results = evaluate(args, model, valid_dataset, ignore_index, global_step)
-                    for key, value in results.items():
-                        writer.add_scalar('eval_{}'.format(key), value, global_step)
-                    print('After', global_step + 1, 'updates: ', end='\n\n')
-                    generate_sample(valid_dataset, tokenizer, model = model, num=2, eval_step=True, device=args.device)
+                    
+            if step % int(total_steps) == 0:       # compute evaluation at the end of training
+                results = evaluate(args, model, valid_dataset, ignore_index, global_step)
+                for key, value in results.items():
+                    writer.add_scalar('eval_{}'.format(key), value, global_step)
+                print('After', global_step + 1, 'updates: ', end='\n\n')
+                generate_sample(valid_dataset, tokenizer, model = model, num=2, eval_step=True, device=args.device)
+
+
+
 
 def evaluate(args, model, eval_dataset, ignore_index, global_step=None):
     """ Returns perplexity score on validation dataset.
