@@ -93,7 +93,7 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
                     best_loss = loss.item()
                     model_save(model, args.model_dir, args.fp16_opt_level, step)                    
                     
-            if step % int(total_steps) == 0:       # compute evaluation at the end of training
+            if (step + 1) % int(total_steps) == 0:       # compute evaluation at the end of training
                 results = evaluate(args, model, valid_dataset, ignore_index, global_step)
                 for key, value in results.items():
                     writer.add_scalar('eval_{}'.format(key), value, global_step)
