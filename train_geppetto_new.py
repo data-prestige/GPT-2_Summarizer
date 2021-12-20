@@ -93,7 +93,7 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
                     generate_sample(valid_dataset, tokenizer, model = model, num=2, eval_step=False, device=args.device)
                 if best_loss == None or loss.item() < best_loss:
                     best_loss = loss.item()
-                    model_save(model, args['model_dir'], args['fp16_opt_level'], step)
+                    model_save(model, args.model_dir, args.fp16_opt_level, step)
                     
             if (step + 1) % (10 * args.gradient_accumulation_steps) == 0:
                 results = evaluate(args, model, valid_dataset, ignore_index, global_step)
@@ -197,7 +197,7 @@ def main():
 
     print('Saving last trained model...')
 
-    model_save(model, args['model_dir'], args['fp16_opt_level'], args['num_train_epochs'])
+    model_save(model, args.model_dir, args.fp16_opt_level, args.num_train_epochs)
     
 
 if __name__ == '__main__':
