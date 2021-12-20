@@ -88,20 +88,15 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
                 writer.add_scalar('loss', (tr_loss - logging_loss) / args.gradient_accumulation_steps, global_step)
                 logging_loss = tr_loss
                 print("loss:", loss.item(), end='\n\n')
-                if (step + 1) / args.gradient_accumulation_steps == 1.0:
-                    print('After 1st update: ', end='\n\n')
-                    generate_sample(valid_dataset, tokenizer, model = model, num=2, eval_step=False, device=args.device)
+
                 if best_loss == None or loss.item() < best_loss:
                     best_loss = loss.item()
-                    model_save(model, args.model_dir, args.fp16_opt_level, step)
-                    
-            if (step + 1) % (10 * args.gradient_accumulation_steps) == 0:
-                results = evaluate(args, model, valid_dataset, ignore_index, global_step)
-                for key, value in results.items():
-                    writer.add_scalar('eval_{}'.format(key), value, global_step)
-                print('After', global_step + 1, 'updates: ', end='\n\n')
-                generate_sample(valid_dataset, tokenizer, model = model, num=2, eval_step=True, device=args.device)
-
+                    model_save(model, args.model_dir, args.fp16_opt_level, step)                    
+                    results = evaluate(args, model, valid_dataset, ignore_index, global_step)
+                    for key, value in results.items():
+                        writer.add_scalar('eval_{}'.format(key), value, global_step)
+                    print('After', global_step + 1, 'updates: ', end='\n\n')
+                    generate_sample(valid_dataset, tokenizer, model = model, num=2, eval_step=True, device=args.device)
 
 def evaluate(args, model, eval_dataset, ignore_index, global_step=None):
     """ Returns perplexity score on validation dataset.
