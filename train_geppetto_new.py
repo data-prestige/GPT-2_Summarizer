@@ -2,7 +2,7 @@ import argparse
 from datetime import datetime
 import os
 import time
-
+import pdb
 import numpy as np
 from transformers import GPT2LMHeadModel, AdamW  # , WarmupLinearSchedule
 from torch.utils.tensorboard import SummaryWriter
@@ -67,6 +67,10 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
             inputs = inputs.to(args.device)
             labels = labels.to(args.device)
             model.train()
+
+            #pdb.set_trace()
+
+
             logits = model(inputs)[0]
             idx = batch['sum_idx'].item()  # index of separator token
             # only consider loss on reference summary just like seq2seq models

@@ -74,11 +74,15 @@ data = data.drop(213) # dropping row 213, very weird text
 '''
 Write to Json tokenized txt
 '''
+directory = 'articoli'
+
+
 
 def write_json(i,article, abstract):
-	""" Saves a json file."""
+	# saves json files
 
-	file = os.path.join(os.getcwd(), 'articoli', 'file_' + str(i) + '.json')
+	#file = os.path.join(os.getcwd(), 'articoli', 'file_' + str(i) + '.json')
+    file = os.path.join(r'C:\Users\Mario\Desktop\Summarization_project', 'articoli_nuovi', 'file_' + str(i) + '.json')
 	js_example = {}
 	js_example['id'] = i
 	js_example['article'] = article
@@ -86,10 +90,9 @@ def write_json(i,article, abstract):
 	with open(file, 'w') as f:
 		json.dump(js_example, f, ensure_ascii=False)
 
-directory = 'articoli'
 
-def tokenizer_to_json(dataset, directory):
-    tokenizer = cleaner_d2v.add_special_tokens()
+def tokenizer_to_json(dataset, directory, model = 'gpt2-large'):
+    tokenizer = cleaner_d2v.add_special_tokens(model)
     train_ids = []
     i = 0
     for index, row in dataset.iterrows():
@@ -98,10 +101,11 @@ def tokenizer_to_json(dataset, directory):
         	train_ids.append(i)
         	write_json(i, article, abstract)
         i += 1
-        if i % 100 == 0:
+        if i % 1000 == 0:
             print(i, " files written")
 
-    file = os.path.join(os.getcwd(), directory, 'index_articoli.json')
+    #file = os.path.join(os.getcwd(), directory, 'index_articoli.json')
+    file = os.path.join(r'C:\Users\Mario\Desktop\Summarization_project', 'articoli_nuovi', 'index_articoli_nuovi.json')
 
     x, y = int(len(train_ids) * 0.8), int(len(train_ids) * 0.9)
     valid_ids = train_ids[x:y]
@@ -115,6 +119,21 @@ def tokenizer_to_json(dataset, directory):
         json.dump(js, f)
 
 tokenizer_to_json(dataset = data, directory=directory)
+
+'''
+new news_data --> better data
+'''
+
+data = pd.read_csv(r'C:\Users\Mario\Desktop\Summarization_project\news_data.csv')
+data.drop('Unnamed: 0', inplace = True, axis = 1)
+directory = 'articoli_nuovi'
+data.columns = ['description_filled', 'label']
+
+tokenizer_to_json(dataset = data, directory=directory, model = 'gpt2-large')
+
+
+
+
 
 
 '''
