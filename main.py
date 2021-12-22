@@ -91,7 +91,7 @@ def write_json(i,article, abstract):
 		json.dump(js_example, f, ensure_ascii=False)
 
 
-def tokenizer_to_json(dataset, directory, model = 'gpt2-large'):
+def tokenizer_to_json(dataset, directory, model = 'GroNLP/gpt2-small-italian'):
     tokenizer = cleaner_d2v.add_special_tokens(model)
     train_ids = []
     i = 0
@@ -129,7 +129,7 @@ data.drop('Unnamed: 0', inplace = True, axis = 1)
 directory = 'articoli_nuovi'
 data.columns = ['description_filled', 'label']
 
-tokenizer_to_json(dataset = data, directory=directory, model = 'gpt2-large')
+tokenizer_to_json(dataset = data, directory=directory, model = 'GroNLP/gpt2-small-italian')
 
 
 
