@@ -2,9 +2,6 @@
 # the issue is that with our previous saving script the config file did not report any information about the model state
 # hence, I need to adopt and refactor this new saving function to our script
 
-
-
-
 def save_checkpoint(state, is_best, filename = 'checkpoint.pth.tar'):
    torch.save(state, filename)
 if is_best:
