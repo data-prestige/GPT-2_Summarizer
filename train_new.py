@@ -18,8 +18,6 @@ from utils_new import add_special_tokens, generate_sample, set_seed
 # WarmupLinearSchedule was not active so I copy pasted the class from an old repository, if it doesn't work we can go with this one below
 from transformers import AdamW, get_linear_schedule_with_warmup
 
-
-
 def model_save(model, model_dir, fp_16, num_epochs):
     model_file = os.path.join(model_dir,
                               'model_{}_trained_after_{}_epochs_only_sum_loss_ignr_pad.bin'.format(
@@ -72,7 +70,6 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
 
             #pdb.set_trace()
 
-
             logits = model(inputs)[0]
             idx = batch['sum_idx'].item()  # index of separator token
             # only consider loss on reference summary just like seq2seq models
@@ -106,8 +103,6 @@ def train(args, model, tokenizer, train_dataset, valid_dataset, ignore_index):
                     writer.add_scalar('eval_{}'.format(key), value, global_step)
                 print('After', global_step + 1, 'updates: ', end='\n\n')
                 generate_sample(valid_dataset, tokenizer, model = model, num=2, eval_step=True, device=args.device)
-
-
 
 
 def evaluate(args, model, eval_dataset, ignore_index, global_step=None):
